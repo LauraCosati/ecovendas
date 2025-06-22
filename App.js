@@ -1,27 +1,20 @@
-// Importações necessárias do React e React Native
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  Image,
-  Dimensions,
-  SafeAreaView,
-  Platform,
-  StatusBar,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
-import { NavigationContainer } from '@react-navigation/native';
-import { MaterialCommunityIcons } from '@expo/vector-icons'; // Importa ícones da comunidade Material
+import React, { useState, useEffect } from 'react';
 
-// Define a pilha de navegação
-const Stack = createStackNavigator();
+// Simplified icon mapping using inline SVGs for web compatibility
+const iconMap = {
+  'tablet': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-10 h-10"><path d="M7 2a2 2 0 00-2 2v16a2 2 0 002 2h10a2 2 0 002-2V4a2 2 0 00-2-2H7zm0 2h10v12H7V4zm1 14h8v1H8v-1z"/></svg>`,
+  'cog-outline': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-10 h-10"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-11v2h2v-2h-2zm0 4v2h2v-2h-2z"/></svg>`,
+  'tshirt-crew': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-10 h-10"><path d="M12 2c-3.87 0-7 3.13-7 7v4.17L4 16h16l-1-2.83V9c0-3.87-3.13-7-7-7zm0 1.5c2.76 0 5 2.24 5 5v3.17l.5.5H6.5l.5-.5V8.5c0-2.76 2.24-5 5-5z"/></svg>`,
+  'notebook-outline': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-10 h-10"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM11 6h2v6h-2V6zm4 0h2v6h-2V6zM7 6h2v6H7V6z"/></svg>`,
+  'bottle-soda-outline': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-10 h-10"><path d="M16 11V5h-1V3H9v2H8v6c0 3.87 3.13 7 7 7s7-3.13 7-7zm-4 8a4 4 0 01-4-4v-3h8v3a4 4 0 01-4 4z"/></svg>`,
+  'bottle-wine-outline': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-10 h-10"><path d="M13 13.5V11h-2v2.5c0 1.1-.9 2-2 2s-2-.9-2-2v-3H5v3c0 2.21 1.79 4 4 4s4-1.79 4-4zm5-9.5V3h-1v1h-1V3h-1v1h-1V3h-1v1H6V3H5v1H4v17h16V4h-2zm-1 16H6V5h12v15z"/></svg>`,
+  'dots-horizontal-circle-outline': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-10 h-10"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM7 11h2v2H7zm4 0h2v2h-2zm4 0h2v2h-2z"/></svg>`,
+  'cogs': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-10 h-10"><path d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.39-1.1-.65-1.7-.82L14 2h-4L9.69 4.35c-.6.17-1.17.43-1.7.82L5.5 4.12c-.22-.08-.49 0-.61.22l-2 3.46c-.12.22-.07.49.12.64l2.11 1.65c-.04.32-.07.64-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.39 1.1.65 1.7.82L10 22h4l.31-2.35c.6-.17 1.17-.43 1.7-.82l2.49 1c.22.08.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/></svg>`,
+  'lightbulb-outline': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-10 h-10"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.69 2 6 4.69 6 8.5c0 2.23 1.5 3.57 2.68 4.71.74.77 1.32 1.34 1.76 1.93.45.59.56 1.18.56 1.86v.5H9c-.55 0-1 .45-1 1h8c0-.55-.45-1-1-1v-.5c0-.68.11-1.27.56-1.86.44-.59 1.02-1.16 1.76-1.93C16.5 12.07 18 10.73 18 8.5 18 4.69 15.31 2 12 2z"/></svg>`,
+  'magnify': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5a6.5 6.5 0 10-6.5 6.5c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>`,
+  'menu-down': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M7 10l5 5 5-5z"/></svg>`,
+};
 
-// Objeto para armazenar as cores principais do aplicativo
 const Colors = {
   primaryGreen: '#4CAF50', // Um verde vibrante
   darkGreen: '#2E7D32',    // Um verde mais escuro
@@ -156,7 +149,7 @@ const materialsData = {
           { name: 'Conectores metálicos', price: 'R$ 10-20/kg', instructions: 'Separar os conectores dos fios. Armazenar em local seco.' },
         ],
         whereToSell: [
-          { item: 'Fios de cobre', place: 'Ferros-velhos e sucateiros' },
+          { item: 'Fios de cobre', place: 'Ferros-velhos, sucateiros' },
           { item: 'Fontes e transformadores', place: 'Lojas de eletrônicos ou sucata' },
         ],
       },
@@ -170,7 +163,7 @@ const materialsData = {
           { name: 'Placa eletrônica de controle de volume', price: 'R$ 15-20/kg', instructions: 'Guardar botões soltos em potinhos de plástico.' },
         ],
         whereToSell: [
-          { item: 'Fios e placas', place: 'Ferros-velhos, recicladoras eletrônicas' },
+          { item: 'Fios e placas', place: 'Ferros-velhos, recicladoras eletrônicos' },
           { item: 'Ímãs e alto-falantes', place: 'Técnicos ou brechós de som' },
         ],
       },
@@ -213,7 +206,7 @@ const materialsData = {
         { name: 'Anel de abertura', price: 'R$ 6-8/kg', instructions: 'Mesmas instruções do corpo da latinha.' },
       ],
       whereToSell: [
-        { item: 'Alumínio', place: 'Ferros-velhos, recicladoras' },
+        { item: 'Alumínio', place: 'Ferros-velhos, sucateiros' },
       ],
     },
     {
@@ -285,7 +278,7 @@ const materialsData = {
         image: 'https://placehold.co/150x150/4CAF50/FFFFFF?text=Chapas', // Placeholder
         parts: [
           { name: 'Zinco / alumínio reciclável', price: 'R$ 2-4/kg', instructions: 'Empilhar sem dobrar demais. Separar por tipo de metal, se possível. Tirar parafusos para facilitar a pesagem.' },
-          { name: 'Parafusos presos à chapa', price: 'R$ 1-3/kg', instructions: 'Mesmas instruções para zinco/alumínio.' },
+          { name: 'Parafusos presos à chapa', price: 'R$ 1-3/kg', instructions: 'Mesmas instruções para zinco/aluminio.' },
         ],
         whereToSell: [
           { item: 'Zinco / alumínio', place: 'Ferros-velhos' },
@@ -438,7 +431,7 @@ const materialsData = {
         parts: [
           { name: 'Calçado inteiro', price: 'R$ 5-15/par', instructions: 'Guardar pares juntos com elástico ou cadarço amarrado.' },
           { name: 'Solado de borracha', price: 'R$ 2-4/kg', instructions: 'Solas em sacos resistentes.' },
-          { name: 'Cadarços, palmilhas e fivelas', price: 'R$ 1-3/un.', instructions: 'Cadarços e fivelas em potinhos.' },
+          { name: 'Cadarços, palmilhas e fivelas', price: 'R$ 1-3/un.', instructions: 'Cadarços e fivelas em potinhos.' }, 
         ],
         whereToSell: [
           { item: 'Calçados inteiros', place: 'Bazares, feiras, brechós' },
@@ -513,7 +506,7 @@ const materialsData = {
       },
       {
         id: 'papelao-limpo',
-        name: 'Papelão Limpo (embalagens em geral)',
+        name: 'Papelão Limpo (embalagens em general)',
         image: 'https://placehold.co/150x150/8D6E63/FFFFFF?text=Papelão+Limpo', // Placeholder
         parts: [
           { name: 'Folhas grandes e limpas', price: 'R$ 0,80-1,50/kg', instructions: 'Empilhar seco, limpo, dobrado. Separar os que estiverem sujos ou rasgados para descarte. Guardar em local sem umidade.' },
@@ -635,7 +628,7 @@ const materialsData = {
     {
       id: 'potes-conserva',
       name: 'Potes de Conserva (azeitonas, palmito, molho)',
-      image: 'https://placehold.co/150x150/4CAF50/FFFFFF?text=Potes+Conserva', // Placeholder
+      image: 'https://placehold.co/150x150/8D6E63/FFFFFF?text=Potes+Conserva', // Placeholder
       parts: [
         { name: 'Pote inteiro (vidro limpo)', price: 'R$ 0,20-0,40/un.', instructions: 'Guardar secos e empilhados com tampa. Separar potes quebrados para vidro reciclável. Nunca misturar com cacos soltos.' },
         { name: 'Tampa metálica rosqueável', price: 'R$ 4-6/kg', instructions: 'Pode ser retirada para reaproveitamento artesanal.' },
@@ -668,7 +661,7 @@ const materialsData = {
         ],
         whereToSell: [
           { item: 'Vidro plano', place: 'Vidraçarias, obras' },
-          { item: 'Cacos grandes', place: 'Artesãos, mosaico' },
+          { item: 'Cacos grandes', place: 'Artesãos, mosaico' }, 
         ],
       },
       {
@@ -966,6 +959,99 @@ const materialsData = {
   ],
 };
 
+// Componente da tela de Login
+function LoginScreen({ navigation }) {
+  const [userName, setUserName] = useState('');
+  const [selectedCooperative, setSelectedCooperative] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  // Lista de cooperativas (você pode expandir esta lista)
+  const cooperatives = [
+    { id: 'coop1', name: 'Coop. Renascer DF' },
+    { id: 'coop2', name: 'Coop. Recicla Brasília' },
+    { id: 'coop3', name: 'Associação Catadores Verde' },
+    { id: 'coop4', name: 'Recicla Tudo - Asa Norte' },
+    { id: 'coop5', name: 'EcoCoop DF Sul' },
+  ];
+
+  const handleLogin = () => {
+    if (userName && selectedCooperative) {
+      // Aqui você pode adicionar a lógica de autenticação ou de persistência de dados do usuário
+      // Por enquanto, vamos navegar para a tela principal (Home)
+      navigation.replace('Home', { userName, selectedCooperative });
+    } else {
+      // Em um app real, você mostraria uma mensagem de erro ao usuário
+      console.log('Por favor, preencha seu nome e selecione uma cooperativa.');
+    }
+  };
+
+  const renderCooperativeItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.cooperativeItem}
+      onPress={() => {
+        setSelectedCooperative(item.name);
+        setIsModalVisible(false);
+      }}
+    >
+      <Text style={styles.cooperativeItemText}>{item.name}</Text>
+    </TouchableOpacity>
+  );
+
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.loginContainer}>
+        <Image 
+          source={{ uri: 'https://placehold.co/150x150/4CAF50/FFFFFF?text=EcoLogo' }} // Placeholder para o logo
+          style={styles.loginLogo}
+        />
+        <Text style={styles.loginHeader}>Bem-vindo(a) ao EcoVendas!</Text>
+        <Text style={styles.loginSubHeader}>Faça seu login para continuar:</Text>
+
+        <TextInput
+          style={styles.loginInput}
+          placeholder="Seu nome"
+          placeholderTextColor={Colors.lightBrown}
+          value={userName}
+          onChangeText={setUserName}
+        />
+
+        <TouchableOpacity style={styles.dropdownButton} onPress={() => setIsModalVisible(true)}>
+          <Text style={styles.dropdownButtonText}>
+            {selectedCooperative ? selectedCooperative : 'Selecione sua cooperativa'}
+          </Text>
+          <MaterialCommunityIcons name="menu-down" size={24} color={Colors.white} />
+        </TouchableOpacity>
+
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isModalVisible}
+          onRequestClose={() => setIsModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <FlatList
+                data={cooperatives}
+                renderItem={renderCooperativeItem}
+                keyExtractor={(item) => item.id}
+                ItemSeparatorComponent={() => <View style={styles.separator} />}
+              />
+              <TouchableOpacity style={styles.modalCloseButton} onPress={() => setIsModalVisible(false)}>
+                <Text style={styles.modalCloseButtonText}>Fechar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+          <Text style={styles.loginButtonText}>Entrar</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+
 // Componente da tela inicial (Home)
 function HomeScreen({ navigation }) {
   const [searchText, setSearchText] = useState('');
@@ -1006,6 +1092,7 @@ function HomeScreen({ navigation }) {
             value={searchText}
             onChangeText={handleSearch}
           />
+          {/* Utiliza MaterialCommunityIcons diretamente como componente */}
           <MaterialCommunityIcons name="magnify" size={24} color={Colors.brown} style={styles.searchIcon} />
         </View>
 
@@ -1035,6 +1122,7 @@ function HomeScreen({ navigation }) {
                   style={[styles.categoryCard, { backgroundColor: category.color }]}
                   onPress={() => navigation.navigate('CategoryDetail', { categoryName: category.name })}
                 >
+                  {/* Utiliza MaterialCommunityIcons diretamente como componente */}
                   <MaterialCommunityIcons name={category.icon} size={40} color={Colors.white} />
                   <Text style={styles.categoryText}>{category.name}</Text>
                 </TouchableOpacity>
@@ -1131,9 +1219,6 @@ const styles = StyleSheet.create({
     color: Colors.darkGreen,
     marginBottom: 20,
     textAlign: 'center',
-    // Adicionar fontes personalizadas no React Native Expo exige carregamento
-    // de fontes. Por simplicidade, vou usar fontes padrão do sistema.
-    // fontFamily: 'Inter_700Bold',
   },
   searchContainer: {
     flexDirection: 'row',
@@ -1155,7 +1240,6 @@ const styles = StyleSheet.create({
     height: 50,
     color: Colors.text,
     fontSize: 16,
-    // fontFamily: 'Inter_400Regular',
   },
   searchIcon: {
     marginLeft: 10,
@@ -1166,7 +1250,6 @@ const styles = StyleSheet.create({
     color: Colors.brown,
     marginTop: 15,
     marginBottom: 10,
-    // fontFamily: 'Inter_600SemiBold',
   },
   categoriesGrid: {
     flexDirection: 'row',
@@ -1193,7 +1276,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     marginTop: 10,
-    // fontFamily: 'Inter_500Medium',
   },
   materialCard: {
     flexDirection: 'row',
@@ -1219,7 +1301,6 @@ const styles = StyleSheet.create({
     color: Colors.text,
     fontWeight: 'bold',
     flexShrink: 1, // Permite que o texto quebre a linha
-    // fontFamily: 'Inter_500Medium',
   },
   categoryDetailHeader: {
     fontSize: 24,
@@ -1227,7 +1308,6 @@ const styles = StyleSheet.create({
     color: Colors.darkGreen,
     marginBottom: 20,
     textAlign: 'center',
-    // fontFamily: 'Inter_700Bold',
   },
   materialDetailHeader: {
     fontSize: 26,
@@ -1235,7 +1315,6 @@ const styles = StyleSheet.create({
     color: Colors.darkGreen,
     marginBottom: 15,
     textAlign: 'center',
-    // fontFamily: 'Inter_700Bold',
   },
   materialDetailImage: {
     width: '100%',
@@ -1262,19 +1341,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.text,
     marginBottom: 5,
-    // fontFamily: 'Inter_600SemiBold',
   },
   partPrice: {
     fontSize: 15,
     color: Colors.brown,
     marginBottom: 5,
-    // fontFamily: 'Inter_400Regular',
   },
   partInstructions: {
     fontSize: 14,
     color: Colors.text,
     fontStyle: 'italic',
-    // fontFamily: 'Inter_400Regular',
   },
   whereToSellCard: {
     backgroundColor: Colors.white,
@@ -1294,12 +1370,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: Colors.text,
     marginBottom: 3,
-    // fontFamily: 'Inter_500Medium',
   },
   whereToSellPlace: {
     fontSize: 15,
     color: Colors.darkGreen,
-    // fontFamily: 'Inter_400Regular',
   },
   simulatedButton: {
     backgroundColor: Colors.darkGreen,
@@ -1317,60 +1391,175 @@ const styles = StyleSheet.create({
     color: Colors.white,
     fontSize: 18,
     fontWeight: 'bold',
-    // fontFamily: 'Inter_600SemiBold',
   },
   noDataText: {
     textAlign: 'center',
     marginTop: 50,
     fontSize: 18,
     color: Colors.text,
-    // fontFamily: 'Inter_400Regular',
   },
   searchResultsContainer: {
     marginTop: 20,
-  }
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: Colors.background,
+  },
+  // Estilos específicos da tela de Login
+  loginContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: Colors.background,
+  },
+  loginLogo: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    marginBottom: 30,
+  },
+  loginHeader: {
+    fontSize: 26,
+    fontWeight: 'bold',
+    color: Colors.darkGreen,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  loginSubHeader: {
+    fontSize: 18,
+    color: Colors.text,
+    marginBottom: 30,
+    textAlign: 'center',
+  },
+  loginInput: {
+    width: '100%',
+    height: 50,
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    fontSize: 16,
+    color: Colors.text,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: Colors.lightBrown,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  dropdownButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    height: 50,
+    backgroundColor: Colors.primaryGreen,
+    borderRadius: 10,
+    paddingHorizontal: 15,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 6,
+  },
+  dropdownButtonText: {
+    color: Colors.white,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  loginButton: {
+    width: '100%',
+    height: 50,
+    backgroundColor: Colors.darkGreen,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 7,
+  },
+  loginButtonText: {
+    color: Colors.white,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+    padding: 20,
+    width: '80%',
+    maxHeight: '70%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  cooperativeItem: {
+    paddingVertical: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.lightBrown,
+  },
+  cooperativeItemText: {
+    fontSize: 16,
+    color: Colors.text,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: Colors.lightBrown,
+  },
+  modalCloseButton: {
+    marginTop: 20,
+    backgroundColor: Colors.brown,
+    padding: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalCloseButtonText: {
+    color: Colors.white,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
 
 // Componente principal do aplicativo
 export default function App() {
+  // Carrega as fontes dos ícones. MaterialCommunityIcons.font é um objeto que contém as informações da fonte.
+  const [fontsLoaded] = useFonts(MaterialCommunityIcons.font);
+
+
+  // Exibe um indicador de carregamento enquanto as fontes não são carregadas
+  if (!fontsLoaded) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.darkGreen} />
+        <Text style={{ marginTop: 10, color: Colors.text }}>Carregando ícones...</Text>
+      </View>
+    );
+  }
+
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ headerShown: false }} // Oculta o cabeçalho padrão
-        />
-        <Stack.Screen
-          name="CategoryDetail"
-          component={CategoryDetailScreen}
-          options={({ route }) => ({
-            title: route.params.categoryName,
-            headerStyle: {
-              backgroundColor: Colors.darkGreen,
-            },
-            headerTintColor: Colors.white,
-            headerTitleStyle: {
-              fontWeight: 'bold',
-              // fontFamily: 'Inter_600SemiBold',
-            },
-          })}
-        />
-        <Stack.Screen
-          name="MaterialDetail"
-          component={MaterialDetailScreen}
-          options={({ route }) => ({
-            title: route.params.material.name,
-            headerStyle: {
-              backgroundColor: Colors.darkGreen,
-            },
-            headerTintColor: Colors.white,
-            headerTitleStyle: {
-              fontWeight: 'bold',
-              // fontFamily: 'Inter_600SemiBold',
-            },
-          })}
-        />
+      {/* Removidos espaços em branco/quebras de linha entre os Screen components */}
+      <Stack.Navigator initialRouteName="Login">
+        <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="CategoryDetail" component={CategoryDetailScreen} options={({ route }) => ({ title: route.params.categoryName, headerStyle: { backgroundColor: Colors.darkGreen, }, headerTintColor: Colors.white, headerTitleStyle: { fontWeight: 'bold', }, })} />
+        <Stack.Screen name="MaterialDetail" component={MaterialDetailScreen} options={({ route }) => ({ title: route.params.material.name, headerStyle: { backgroundColor: Colors.darkGreen, }, headerTintColor: Colors.white, headerTitleStyle: { fontWeight: 'bold', }, })} />
       </Stack.Navigator>
     </NavigationContainer>
   );
