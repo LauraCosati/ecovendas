@@ -1,4 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import { 
+  StyleSheet, 
+  Text, 
+  View, 
+  TouchableOpacity, 
+  SafeAreaView, 
+  ScrollView, 
+  TextInput, 
+  Image, 
+  Modal, 
+  FlatList, 
+  Platform, 
+  StatusBar, 
+  Dimensions, 
+  ActivityIndicator
+} from 'react-native';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useFonts } from 'expo-font';
 
 // Simplified icon mapping using inline SVGs for web compatibility
 const iconMap = {
@@ -1202,6 +1222,7 @@ function MaterialDetailScreen({ route }) {
   );
 }
 
+
 // Estilos do aplicativo
 const styles = StyleSheet.create({
   safeArea: {
@@ -1535,6 +1556,9 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+
+const Stack = createNativeStackNavigator();
 
 // Componente principal do aplicativo
 export default function App() {
